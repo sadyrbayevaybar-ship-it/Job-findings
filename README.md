@@ -25,23 +25,16 @@ Logs every scored listing to a spreadsheet for a full audit trail.
 Creates a CRM deal card for each listing, so the application process (applied → response → interview → offer) can be tracked like a sales pipeline — because that's functionally what a job search is.
 Notifies via Telegram in real time, so the loop from "posted" to "I know about it" is minutes, not days.
 Architecture
-Apify (LinkedIn scraper)
-        │  webhook on run completion
-        ▼
-Zapier: fetch full result set from the scrape
-        ▼
-Zapier: split into individual listings
-        ▼
-Zapier: filter — company tier, category match, recency, duplicates
-        ▼  (only listings that pass)
-Claude API — structured scoring (JSON in/out)
-        ▼
-parse + normalize the model's response (JavaScript)
-        ▼
-   ┌────────────┬────────────────┬───────────────┐
-   ▼            ▼                ▼
-Google Sheets  HubSpot Deal    Telegram alert
-(audit log)    (pipeline card)  (real-time ping)
+Apify (LinkedIn scraper) — runs the scrape, then fires a webhook on run completion
+Zapier — fetch the full result set from the scrape
+Zapier — split the result set into individual listings
+Zapier — filter: company tier, category match, recency, duplicates (only listings that pass move on)
+Claude API — structured scoring (JSON in / JSON out)
+Parse + normalize the model's response (JavaScript)
+Fan out to three destinations, in parallel, for each scored listing:
+Google Sheets — audit log
+HubSpot Deal — pipeline card
+Telegram alert — real-time ping
 
 Stack: Apify (scraping), Zapier (orchestration), Claude API / Anthropic (scoring), Google Sheets (logging, MVP stage), HubSpot (pipeline CRM), Telegram Bot API (notifications), GitHub (version control).
 
